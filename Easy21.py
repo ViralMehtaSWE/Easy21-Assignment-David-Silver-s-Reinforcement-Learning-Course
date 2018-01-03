@@ -65,7 +65,9 @@ def get_Q_val(sa):
     
 def get_next_action(state, test = False):
     if(test == False):
-        if(random.random() < 0.5):
+        if(state in N): prob = get_epsilon(N[state])
+        else: prob = 0.5
+        if(random.random() < prob):
             return(random.randint(0,1) == 1)
     sa1 = (state, True)
     sa0 = (state, False)
@@ -84,7 +86,7 @@ def update_Q(sa, reward):
     update_N(state)
     Q[sa] = ((N[state]-1)*Q[sa] + reward)/(N[state])
     
-def train(num_episodes = 1000000):
+def train(num_episodes = 100000):
     global stick_done
     print("Training Started.....")
     for i in range(1, num_episodes + 1):
@@ -104,8 +106,11 @@ def train(num_episodes = 1000000):
         length = len(path)
         for j in range(length):
             update_Q(path[j], G)
-        if(i%50000==0):
-            print("Current Episode =", i, "len(Q) =", len(Q))
+        if((i%10000==0) and (i>0)):
+            for tc in range(100000):
+                test()
+            total = wins + draws + losses
+            print("Current Episode =", i, "accuracy stats (Win, Draw, Loss) =", (wins/total, draws/total, losses/total))
     print("Training Completed!")
         
 def test():
